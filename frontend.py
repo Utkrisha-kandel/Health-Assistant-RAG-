@@ -5,17 +5,14 @@ import create_vector as cv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema import SystemMessage, HumanMessage
 
-# Directory where patient PDFs are stored
 PDF_DIR = "documents"
 
-# Get all PDF files
 pdf_files = [f for f in os.listdir(PDF_DIR) if f.endswith(".pdf")]
 patient_names = ["-- Select a patient --"] + [os.path.splitext(f)[0] for f in pdf_files]
 
 st.set_page_config(page_title="Patient Records", layout="wide")
-st.title("🏥 Health Assistant")
+st.title("Health Assistant")
 
-# Sidebar: choose patient
 st.sidebar.header("Select Patient")
 selected_patient = st.sidebar.selectbox("Choose a patient:", patient_names)
 
@@ -48,15 +45,12 @@ else:
     else:
         st.warning("PDF not found for this patient.")
 
-    # Only show input after patient selected
     user_query = st.text_input(f"Enter your query about {selected_patient}")
     submit_button = st.button("Submit")
 
     if submit_button and user_query:
-        # Embed the user query
         vector = cv.embed_text(user_query)
 
-        # Query Pinecone ONLY for the selected patient
         vector_search_response = cv.vector_index.query(
             vector=vector,
             top_k=3,
@@ -64,13 +58,11 @@ else:
             filter={"patient_name": selected_patient}
         )
 
-        # Collect similar texts
         similar_texts = ""
         for match in vector_search_response["matches"]:
             text = match["metadata"]["text"]
             similar_texts += text + "\n\n"
 
-        # Prepare system prompt
         system_prompt = f"""You are a medical AI assistant acting as a doctor. 
 Your task is to answer patient queries by analyzing their current health issue and 
 retrieving relevant information from their past medical history stored in PDF documents.
@@ -87,17 +79,14 @@ Relevant history:
 {similar_texts}
 """
 
-        # Initialize LLM
+        
         llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", api_key=os.getenv("API_KEY_GOOGLE"))
 
-        # Create message objects
         messages = [
             [SystemMessage(content=system_prompt), HumanMessage(content=user_query)]
         ]
 
-        # Generate response
         llm_response = llm.generate(messages)
         llm_answer = llm_response.generations[0][0].text
 
-        # Display result
         st.markdown(f"**Health-Assistant:** {llm_answer}")

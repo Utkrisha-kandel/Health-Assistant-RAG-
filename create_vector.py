@@ -1,13 +1,11 @@
 import os
 from dotenv import load_dotenv
 from pinecone import Pinecone
-import fitz  # PyMuPDF
+import fitz  
 from google import genai
 
-# Load environment variables
 load_dotenv()
 
-# Initialize clients
 pine_api = os.getenv("API_KEY_PINE")
 google_api = os.getenv("API_KEY_GOOGLE")
 
@@ -17,12 +15,10 @@ if not pine_api or not google_api:
 pine_client = Pinecone(api_key=pine_api)
 gemini_client = genai.Client(api_key=google_api)
 
-# Pinecone index
+
 vector_index = pine_client.Index("health-assistant")
 
-# -------------------------
-# PDF to text extraction
-# -------------------------
+
 def extract_text(pdf_path):
     text = ""
     with fitz.open(pdf_path) as doc:
@@ -30,9 +26,7 @@ def extract_text(pdf_path):
             text += page.get_text()
     return text.strip()
 
-# -------------------------
-# Chunking function
-# -------------------------
+
 def chunk_text(text, chunk_size=800, overlap=100):
     words = text.split()
     chunks = []
@@ -45,9 +39,7 @@ def chunk_text(text, chunk_size=800, overlap=100):
         start += chunk_size - overlap
     return chunks
 
-# -------------------------
-# Embedding with Gemini
-# -------------------------
+
 def embed_text(text):
     try:
         response = gemini_client.models.embed_content(
@@ -66,9 +58,6 @@ def embed_text(text):
         print(f"Embedding failed: {e}")
         return None
 
-# -------------------------
-# Upsert to Pinecone
-# -------------------------
 def upsert_vectors_to_pinecone(docs, batch_size=100):
     upsert_batch = []
     for vector_id, vector, metadata in docs:
@@ -84,11 +73,9 @@ def upsert_vectors_to_pinecone(docs, batch_size=100):
             upsert_batch.clear()
     if upsert_batch:
         vector_index.upsert(vectors=upsert_batch)
-    print("✅ Vectors upserted successfully")
+    print("Vectors upserted successfully")
 
-# -------------------------
-# Main
-# -------------------------
+
 if __name__ == "__main__":
     pdf_dir = "documents"
     document_files = os.listdir(pdf_dir)
@@ -100,11 +87,11 @@ if __name__ == "__main__":
 
         text = extract_text(file_path)
         if not text:
-            print(f"⚠️ Skipping {file_name}, no text found.")
+            print(f"Skipping {file_name}, no text found.")
             continue
 
         chunks = chunk_text(text)
-        print(f"    Extracted {len(chunks)} chunks.")
+        print(f"Extracted {len(chunks)} chunks.")
 
         
         patient_name = os.path.splitext(file_name)[0]
