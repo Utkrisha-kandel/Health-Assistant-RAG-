@@ -15,7 +15,6 @@ if not pine_api or not google_api:
 pine_client = Pinecone(api_key=pine_api)
 gemini_client = genai.Client(api_key=google_api)
 
-
 vector_index = pine_client.Index("health-assistant")
 
 
@@ -58,6 +57,7 @@ def embed_text(text):
         print(f"Embedding failed: {e}")
         return None
 
+
 def upsert_vectors_to_pinecone(docs, batch_size=100):
     upsert_batch = []
     for vector_id, vector, metadata in docs:
@@ -93,7 +93,6 @@ if __name__ == "__main__":
         chunks = chunk_text(text)
         print(f"Extracted {len(chunks)} chunks.")
 
-        
         patient_name = os.path.splitext(file_name)[0]
 
         for i, chunk in enumerate(chunks):
@@ -103,8 +102,8 @@ if __name__ == "__main__":
             metadata = {
                 "source": file_name,
                 "chunk": i,
-                "text": chunk[:500],     
-                "patient_name": patient_name 
+                "text": chunk[:500],        
+                "patient_name": patient_name  
             }
             all_vectors.append((vector_id, vector, metadata))
 

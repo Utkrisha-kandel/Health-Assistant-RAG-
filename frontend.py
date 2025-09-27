@@ -35,12 +35,12 @@ if selected_patient == "-- Select a patient --":
 
 else:
     pdf_path = os.path.join(PDF_DIR, f"{selected_patient}.pdf")
-    st.subheader(f"📄 Full Report for: {selected_patient}")
+    st.subheader(f"Full Report for: {selected_patient}")
 
     if os.path.exists(pdf_path):
         with open(pdf_path, "rb") as f:
             pdf_bytes = f.read()
-        st.markdown("📑 PDF Preview:")
+        st.markdown("PDF Preview:")
         pdf_viewer(input=pdf_bytes, width=900, height=700)
     else:
         st.warning("PDF not found for this patient.")
@@ -79,7 +79,6 @@ Relevant history:
 {similar_texts}
 """
 
-        
         llm = ChatGoogleGenerativeAI(model="gemini-2.5-pro", api_key=os.getenv("API_KEY_GOOGLE"))
 
         messages = [
